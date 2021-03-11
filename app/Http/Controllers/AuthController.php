@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Tymon\JWTAuth\Exceptions\TokenExpiredException;
 
 class AuthController extends Controller
 {
@@ -62,7 +63,15 @@ class AuthController extends Controller
      */
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());
+        try {
+            $token = auth()->refresh();
+        } catch (TokenExpiredException $e) {
+            return response()->json(['error' => 'Unauthorized 1'], 401);
+        } catch (\Exception $e) {
+            \Log::error($e->getMessage(), ['code' => $e->getCode(), 'file' => $e->getLine(), 'line' => $e->getLine()]);
+            return response()->json(['error' => 'Unauthorized 2'], 401);
+        }
+        return $this->respondWithToken($token);
     }
 
     /**
@@ -77,7 +86,7 @@ class AuthController extends Controller
         return response()->json([
             'access_token' => $token,
             'token_type'   => 'bearer',
-            'expires_in'   => auth()->factory()->getTTL() * 60
+            'expires_in'   => auth()->factory()->getTTL()
         ]);
     }
 }
