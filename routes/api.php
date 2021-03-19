@@ -26,4 +26,6 @@ Route::group(['prefix' => 'v1'], function () {
         Route::post('refresh', [AuthController::class, 'refresh']);
         Route::get('me', [AuthController::class, 'me']);
     });
+
+    Route::put('file', [\App\Http\Controllers\FileController::class, 'upload']);
 });
